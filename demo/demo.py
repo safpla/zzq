@@ -42,8 +42,9 @@ def write_data(txt, label, f, pad, vocab_id):
         f.write('\n')
 
 
-def main(input_json, output_json):
-
+def main(_):
+    input_json = 'input.json'
+    output_json = 'output.json'
     dict_file_path = 'data.dict'
 
     get_data_extract(input_json)
