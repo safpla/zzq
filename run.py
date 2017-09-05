@@ -19,11 +19,10 @@ np.random.seed(3306)
 np.set_printoptions(linewidth=200)
 
 
-def train(train_data_path, test_data_path):
+def train(train_data_path, test_data_path, cv_num=1):
     embedding_path = 'data/embedding_data.p'
     dict_path = 'data/data.dict'
     meta_data_path = 'data/meta.pkl'
-    model_save_path = 'model/model1/model.ckpt'
 
     fake_data_num = config.fake_data_num
     batch_size = config.batch_size
@@ -153,9 +152,8 @@ def train(train_data_path, test_data_path):
 
             start_time = time.time()
 
-            save_path = model.saver.save(sess, model_save_path, global_steps=(batches + 1))
-            print('save the model in ', save_path)
-
+    save_path = model.saver.save(sess, 'model/model' + str(cv_num) + 'model.ckpt')
+    print('save the model in ', save_path)
     return test_label, test_errors
 
 
@@ -165,7 +163,7 @@ def main(_):
     for i in xrange(10):
         train_data_path = 'data/cv/train.' + str(i)
         test_data_path = 'data/cv/test.' + str(i)
-        acc_label, test_errors = train(train_data_path, test_data_path)
+        acc_label, test_errors = train(train_data_path, test_data_path, cv_num=i)
         accs_label.append(acc_label)
         print(np.mean(accs_label))
         print(accs_label)
