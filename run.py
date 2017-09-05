@@ -23,6 +23,7 @@ def train(train_data_path, test_data_path):
     embedding_path = 'data/embedding_data.p'
     dict_path = 'data/data.dict'
     meta_data_path = 'data/meta.pkl'
+    model_save_path = 'model/model1/model.ckpt'
 
     fake_data_num = config.fake_data_num
     batch_size = config.batch_size
@@ -151,6 +152,9 @@ def train(train_data_path, test_data_path):
             sys.stdout.write("\n\n")
 
             start_time = time.time()
+
+            save_path = model.saver(sess, model_save_path, global_steps=(batches + 1))
+            print('save the model in ', save_path)
 
     return test_label, test_errors
 
