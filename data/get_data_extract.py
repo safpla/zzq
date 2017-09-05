@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import json
 import operator
 import numpy as np
@@ -35,7 +36,7 @@ for i in data1:
 
 print(dl)
 f = open('meta.pkl', 'wb')
-pkl.dump({'n_y': len(dl) - 1}, f, protocol=2)
+pkl.dump({'n_y': len(dl) - 1, 'dl': dl}, f, protocol=2)
 f.close()
 
 for i in data0:
