@@ -1,12 +1,12 @@
 import tensorflow as tf
 import json
-import cPickle as pkl
+import pickle as pkl
 import thulac
 
 
 def get_data_extract(input_json):
     ft = open('demo/data.txt0', 'w')
-    fl = open('demo.data.label', 'w')
+    fl = open('demo/data.label', 'w')
     meta_data_path = 'data/meta.pkl'
     meta_data = pkl.load(open(meta_data_path, 'rb'))
     label_class = meta_data['n_y']
@@ -16,10 +16,9 @@ def get_data_extract(input_json):
     data = json.load(f)
     for line in data:
         fl.write(''.join([str(ll) for ll in l[1:]]) + '\n')
-        ft.write(' 000000000000000000 '.join(line['extract']) + '\n')
+        ft.write(line['extract'] + '\n')
     ft.close()
     fl.close()
-
 
 def write_data(txt, label, f, pad, vocab_id):
     for i in range(len(txt)):
@@ -43,24 +42,28 @@ def write_data(txt, label, f, pad, vocab_id):
 
 
 def main(_):
-    input_json = 'input.json'
-    output_json = 'output.json'
-    dict_file_path = 'data.dict'
+    input_json = 'demo/input.json'
+    output_json = 'demo/output.json'
+    dict_file_path = 'data/data.dict'
 
+    """
     get_data_extract(input_json)
-
-    thu = thulac.thulac(seg_only=True, model_path='thulac_models')
+    thu = thulac.thulac(seg_only=True, model_path='data/thulac_models')
     thu.cut_f('demo/data.txt0', 'demo/data.txt1')
+    print('cut finished')
+    exit()
+    """
 
     pad = 4
-    train_txt = open('demo/data.txt0', 'r').readlines()
+    train_txt = open('demo/data.txt1', 'r').readlines()
     train_label = open('demo/data.label', 'r').readlines()
     train_file = open('demo/train_data.data', 'w')
-    dict_file = open(dict_file_path, 'r')
-    vocab_sorted = pkl.load(dict_file)['vocab_sorted']
+    loaded = pkl.load(open(dict_file_path, 'r'))
+    vocab_sorted = loaded['word']
     vocab_id = {'#SOS#': 2}
     for v in range(len(vocab_sorted)):
         vocab_id[vocab_sorted[v][0]] = v + 3
+    print('vocab loaded')
 
     write_data(train_txt, train_label, train_file, pad, vocab_id)
     train_file.close()
