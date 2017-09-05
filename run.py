@@ -153,7 +153,7 @@ def train(train_data_path, test_data_path):
 
             start_time = time.time()
 
-            save_path = model.saver(sess, model_save_path, global_steps=(batches + 1))
+            save_path = model.saver.save(sess, model_save_path, global_steps=(batches + 1))
             print('save the model in ', save_path)
 
     return test_label, test_errors
