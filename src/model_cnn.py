@@ -105,6 +105,7 @@ class Model:
                 # self.train_step = tf.train.AdadeltaOptimizer(learning_rate=1.0, rho=0.95, epsilon=1e-08).minimize(self.loss)
                 # self.train_step = tf.train.RMSPropOptimizer(learning_rate=0.1).minimize(self.loss)
 
+            # xhw added, 2017-09-05
             self.saver = tf.train.Saver(max_to_keep=10)
             # tvars = tf.trainable_variables()
             #
@@ -180,3 +181,24 @@ class Model:
         loss /= len(w)
 
         return label_accuracy, loss, errors
+
+
+    def predict(self, sess, w, sl, batch_size):
+    # xhw added, based on xqw's code, 2017-09-06
+        i = 0
+        while i < len(w):
+            w_batch = w[i: i + batch_size]
+            sl_batch = sl[i: i + batch_size]
+            i += batch_size
+
+            w_batch = utilizer.pad_list(w_batch.tolist())
+
+            p = sess.run([self.y],
+                         feed_dict={self.w: w_batch,
+                                    self.sl: sl_batch,
+                                    # self.y_: y_batch,
+                                    self.dropout_keep_prob_mlp: 1.0,
+                                    self.is_training: False})
+
+        # labels = np.argmax(r, axis=1)
+        return p

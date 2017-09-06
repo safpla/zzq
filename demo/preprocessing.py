@@ -69,18 +69,9 @@ def main(_):
     train_file.close()
 
 
+
+
+
 if __name__ == '__main__':
     tf.app.run()
-    """
-    meta_data_path = 'data/meta.pkl'
-    meta_data = pkl.load(open(meta_data_path, 'rb'))
-    label_class = meta_data['n_y']
-    label_ind_map = meta_data['dl']
 
-    embedding_file_path = 'data/embedding_data.p'
-    embedding_file = open(embedding_file_path, 'r')
-    embeddings = pkl.load(embedding_file)
-    embedding_file.close()
-    embedding = embeddings["pretrain"]["word_embedding"]
-    maxlen = embeddings['maxlen']
-    """
