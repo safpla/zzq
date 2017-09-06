@@ -186,6 +186,7 @@ class Model:
     def predict(self, sess, w, sl, batch_size):
     # xhw added, based on xqw's code, 2017-09-06
         i = 0
+	ps = []
         while i < len(w):
             w_batch = w[i: i + batch_size]
             sl_batch = sl[i: i + batch_size]
@@ -193,12 +194,13 @@ class Model:
 
             w_batch = utilizer.pad_list(w_batch.tolist())
 
-            p = sess.run([self.y],
+            p = sess.run(self.y,
                          feed_dict={self.w: w_batch,
                                     self.sl: sl_batch,
                                     # self.y_: y_batch,
                                     self.dropout_keep_prob_mlp: 1.0,
                                     self.is_training: False})
-
+	    ps.append(p)
+	ps = np.concatenate(ps)
         # labels = np.argmax(r, axis=1)
-        return p
+        return ps

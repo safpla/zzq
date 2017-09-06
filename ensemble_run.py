@@ -8,6 +8,16 @@ import cPickle as pkl
 from src import utilizer
 from src import model_cnn as main_model
 from src import config
+def class_decoding(l_multi, ind_label_map):
+    label = ''
+    for i in range(len(l_multi)):
+	if l_multi[i] == 1:
+	    label = label + ind_label_map[i+1] + ' '
+    if label == '':
+	label = label + ind_label_map[0]
+    return label
+
+
 def main(_):
     # load data
     batch_size = config.batch_size
@@ -16,6 +26,9 @@ def main(_):
     meta_data = pkl.load(open(meta_data_path, 'rb'))
     label_class = meta_data['n_y']
     label_ind_map = meta_data['dl']
+    ind_label_map = {}
+    for (k,v) in label_ind_map.items():
+	ind_label_map[v] = k
 
     embedding_file_path = 'data/embedding_data.p'
     embedding_file = open(embedding_file_path, 'r')
@@ -34,7 +47,11 @@ def main(_):
     print('W_embedding shape', W_embedding.shape)
     print('maxlen:', maxlen)
     print('Label class:', label_class)
-    print('label to index map', label_ind_map)
+    print('label to index map:')
+    for (k,v) in label_ind_map.items():
+	print('\t',k.encode('utf8'),':',v)
+
+    print('batch_size:', batch_size)
 
     # build graph
     tf.reset_default_graph()
@@ -45,17 +62,29 @@ def main(_):
     model = main_model.Model(label_class, maxlen, W_embedding)
     sess.run(tf.global_variables_initializer())
 
-    pro_ensemble = []
+    p_ave = np.zeros((7,2), dtype=np.float32)
     for i in range(10):
         # load parameter
         model_path = 'model/model' + str(i) + 'model.ckpt'
         # graph_path = model_path + '.meta'
         model.saver.restore(sess, model_path)
         probability = model.predict(sess, W_test, L_test, int(batch_size / 1))
-        pro_ensemble.append(probability)
-
-    print('result:', pro_ensemble)
-
+        print(probability[0,:,:])
+	p_ave = p_ave + probability
+    print('p_ave: ', p_ave[0,:,:])
+    predict_label_path = 'demo/predict.label'
+    predict_label = open(predict_label_path, 'w')
+    num_samp, num_class, _ = p_ave.shape
+    for isamp in range(num_samp):
+	p = p_ave[isamp, :, :]
+	print('p: ', p)
+	l_multi = np.argmax(p,1)
+	print('l_mulit: ', l_multi)
+	label = class_decoding(l_multi, ind_label_map)
+	predict_label.write(label.encode('utf8'))
+	predict_label.write('\n')
+        exit()
+    predict_label.close()    
 
 if __name__ == '__main__':
     tf.app.run()

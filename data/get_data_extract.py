@@ -41,10 +41,16 @@ f.close()
 
 for i in data0:
     l = [0 for _ in dl]
-    ddl = [k for k in dl]
-    for k in range(len(ddl)):
-        if i['DL'] == ddl[k]:
-            l[k] = 1
+    # debuged by xhw, 2017-09-06
+    # <<<<< origin
+    # ddl = [k for k in dl]
+    # for k in range(len(ddl)):
+    #     if i['DL'] == ddl[k]:
+    #         l[k] = 1
+    # >>>>> update
+    l[dl[i['DL']]] = 1
+    # <<<<< end
+
     fl.write(''.join([str(ll) for ll in l[1:]]) + '\n')
 
     ts = []
@@ -58,10 +64,17 @@ for i in data0:
 
 for i in data1:
     l = [0 for _ in dl]
-    ddl = [k for k in dl]
-    for k in range(len(ddl)):
-        if ddl[k] in i['XL'].replace('、', '，').split('，'):
-            l[k] = 1
+    # debuged by xhw, 2017-09-06
+    # <<<<< origin
+    # ddl = [k for k in dl]
+    # for k in range(len(ddl)):
+    #     if ddl[k] in i['XL'].replace('、', '，').split('，'):
+    #         l[k] = 1
+    # >>>>> update
+    for label in i['XL'].replace('、', '，').split('，'):
+        l[dl[label]] = 1
+    # <<<<< end
+
     fl.write(''.join([str(ll) for ll in l[1:]]) + '\n')
 
     ts = []
