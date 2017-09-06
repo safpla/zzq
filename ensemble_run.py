@@ -11,10 +11,10 @@ from src import config
 def class_decoding(l_multi, ind_label_map):
     label = ''
     for i in range(len(l_multi)):
-	if l_multi[i] == 1:
-	    label = label + ind_label_map[i+1] + ' '
+        if l_multi[i] == 1:
+            label = label + ind_label_map[i+1] + ' '
     if label == '':
-	label = label + ind_label_map[0]
+        label = label + ind_label_map[0]
     return label
 
 
@@ -28,7 +28,7 @@ def main(_):
     label_ind_map = meta_data['dl']
     ind_label_map = {}
     for (k,v) in label_ind_map.items():
-	ind_label_map[v] = k
+        ind_label_map[v] = k
 
     embedding_file_path = 'data/embedding_data.p'
     embedding_file = open(embedding_file_path, 'r')
@@ -49,7 +49,7 @@ def main(_):
     print('Label class:', label_class)
     print('label to index map:')
     for (k,v) in label_ind_map.items():
-	print('\t',k.encode('utf8'),':',v)
+        print('\t',k.encode('utf8'),':',v)
 
     print('batch_size:', batch_size)
 
@@ -70,21 +70,20 @@ def main(_):
         model.saver.restore(sess, model_path)
         probability = model.predict(sess, W_test, L_test, int(batch_size / 1))
         print(probability[0,:,:])
-	p_ave = p_ave + probability
+    p_ave = p_ave + probability
     print('p_ave: ', p_ave[0,:,:])
     predict_label_path = 'demo/predict.label'
     predict_label = open(predict_label_path, 'w')
     num_samp, num_class, _ = p_ave.shape
     for isamp in range(num_samp):
-	p = p_ave[isamp, :, :]
-	print('p: ', p)
-	l_multi = np.argmax(p,1)
-	print('l_mulit: ', l_multi)
-	label = class_decoding(l_multi, ind_label_map)
-	predict_label.write(label.encode('utf8'))
-	predict_label.write('\n')
-        exit()
-    predict_label.close()    
+        p = p_ave[isamp, :, :]
+        print('p: ', p)
+        l_multi = np.argmax(p,1)
+        print('l_mulit: ', l_multi)
+        label = class_decoding(l_multi, ind_label_map)
+        predict_label.write(label.encode('utf8'))
+        predict_label.write('\n')
+    predict_label.close()
 
 if __name__ == '__main__':
     tf.app.run()
