@@ -85,6 +85,7 @@ def train(train_data_path, test_data_path, cv_num=1):
     print('Label class:', label_class)
 
     tf.reset_default_graph()
+    tf.device('/cpu:2')
     # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9, allow_growth=True)
     gpu_options = tf.GPUOptions(allow_growth=True)
     sess = tf.InteractiveSession(config=tf.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True))
