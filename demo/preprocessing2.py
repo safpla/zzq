@@ -1,24 +1,7 @@
+# run in python2
+
 import tensorflow as tf
-import json
 import pickle as pkl
-import thulac
-
-
-def get_data_extract(input_json):
-    ft = open('demo/data.txt0', 'w')
-    fl = open('demo/data.label', 'w')
-    meta_data_path = 'data/meta.pkl'
-    meta_data = pkl.load(open(meta_data_path, 'rb'))
-    label_class = meta_data['n_y']
-    l = [0] * label_class
-
-    f = open(input_json, 'r')
-    data = json.load(f)
-    for line in data:
-        fl.write(''.join([str(ll) for ll in l[1:]]) + '\n')
-        ft.write(line['extract'] + '\n')
-    ft.close()
-    fl.close()
 
 def write_data(txt, label, f, pad, vocab_id):
     for i in range(len(txt)):
@@ -42,18 +25,7 @@ def write_data(txt, label, f, pad, vocab_id):
 
 
 def main(_):
-    input_json = 'demo/input.json'
-    output_json = 'demo/output.json'
     dict_file_path = 'data/data.dict'
-
-    """
-    get_data_extract(input_json)
-    thu = thulac.thulac(seg_only=True, model_path='data/thulac_models')
-    thu.cut_f('demo/data.txt0', 'demo/data.txt1')
-    print('cut finished')
-    exit()
-    """
-
     pad = 4
     train_txt = open('demo/data.txt1', 'r').readlines()
     train_label = open('demo/data.label', 'r').readlines()
@@ -67,10 +39,6 @@ def main(_):
 
     write_data(train_txt, train_label, train_file, pad, vocab_id)
     train_file.close()
-
-
-
-
 
 if __name__ == '__main__':
     tf.app.run()

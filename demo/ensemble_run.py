@@ -5,9 +5,9 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 import cPickle as pkl
-from src import utilizer
-from src import model_cnn as main_model
-from src import config
+from ..src import utilizer
+from ..src import model_cnn as main_model
+from ..src import config
 def class_decoding(l_multi, ind_label_map):
     label = ''
     for i in range(len(l_multi)):
