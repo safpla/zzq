@@ -46,7 +46,7 @@ def main(_):
     output_json = 'demo/output.json'
     dict_file_path = 'data/data.dict'
 
-    """
+    """ 
     get_data_extract(input_json)
     thu = thulac.thulac(seg_only=True, model_path='data/thulac_models')
     thu.cut_f('demo/data.txt0', 'demo/data.txt1')

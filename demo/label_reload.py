@@ -20,21 +20,22 @@ def main():
     bullets = bullet_stream.readlines()
     for i in range(len(bullets)):
         bullet = bullets[i].strip()
-        if bullet == u'非影视作品':
+        if bullet == '非影视作品':
             if (ERROR_CASE_OUTPUT == 1) and (guns[i]['DL'] != bullet):
-                error_case.append(guns[i])
-                error_case[error_case_num]['labeled as'] = bullet
+                error_case.append(guns[i].copy())
+                error_case[error_case_num]['wrong label'] = bullet
                 error_case_num += 1
             guns[i]['DL'] = bullet
         else:
-            guns[i]['DL'] = '影视作品'
-            guns[i]['XL'] = bullet
             if (ERROR_CASE_OUTPUT == 1) and (guns[i]['XL'] != bullet):
-                error_case.append(guns[i])
-                error_case[error_case_num]['labeled as'] = bullet
+                error_case.append(guns[i].copy())
+                error_case[error_case_num]['wrong label'] = bullet
                 error_case_num += 1
-    json.dump(guns, output_stream)
-    json.dump(error_case, error_case_stream)
+            guns[i]['XL'] = bullet
+            guns[i]['DL'] = '影视作品'
+    print('wrong rate:', error_case_num/len(bullets))
+    json.dump(guns, output_stream, ensure_ascii=False, indent=2)
+    json.dump(error_case, error_case_stream, ensure_ascii=False, indent=2)
     output_stream.close()
     error_case_stream.close()
 
