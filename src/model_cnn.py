@@ -105,8 +105,6 @@ class Model:
                 # self.train_step = tf.train.AdadeltaOptimizer(learning_rate=1.0, rho=0.95, epsilon=1e-08).minimize(self.loss)
                 # self.train_step = tf.train.RMSPropOptimizer(learning_rate=0.1).minimize(self.loss)
 
-            # xhw added, 2017-09-05
-            self.saver = tf.train.Saver(max_to_keep=10)
             # tvars = tf.trainable_variables()
             #
             # for var in tvars:

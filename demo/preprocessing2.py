@@ -25,11 +25,11 @@ def write_data(txt, label, f, pad, vocab_id):
 
 
 def main(_):
-    dict_file_path = 'data/data.dict'
+    dict_file_path = '../data/data.dict'
     pad = 4
-    train_txt = open('demo/data.txt1', 'r').readlines()
-    train_label = open('demo/data.label', 'r').readlines()
-    train_file = open('demo/train_data.data', 'w')
+    train_txt = open('data.txt1', 'r').readlines()
+    train_label = open('data.label', 'r').readlines()
+    train_file = open('train_data.data', 'w')
     loaded = pkl.load(open(dict_file_path, 'r'))
     vocab_sorted = loaded['word']
     vocab_id = {'#SOS#': 2}
