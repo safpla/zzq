@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-class Ensemble_Model_Interface(object):
+class EnsembleModelInterface(object):
     __metaclass__ = ABCMeta
 
     def __init__(self):

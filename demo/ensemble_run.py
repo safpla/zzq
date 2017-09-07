@@ -6,24 +6,49 @@ import tensorflow as tf
 import numpy as np
 import cPickle as pkl
 import sys
+import os
+import model_info
+
 sys.path.append("..")
 from src import utilizer
-from src import model_cnn as main_model
+from src import model_cnn as model_cnn_lishen
 from src import config
-def class_decoding(l_multi, ind_label_map):
-    label = ''
-    for i in range(len(l_multi)):
-        if l_multi[i] == 1:
-            label = label + ind_label_map[i+1] + ' '
-    if label == '':
-        label = label + ind_label_map[0]
+
+
+def label_decoding(label, ind_label_map):
+    label_chn = ''
+    for i in range(len(label)):
+        if label[i] == 1:
+            label_chn = label_chn + ind_label_map[i] + ' '
+    return label_chn.strip()
+
+
+def implement_model(model, model_path, model_name, sents):
+    gpu_options = tf.GPUOptions(allow_growth=True)
+    sess = tf.InteractiveSession(config=tf.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True))
+    sess.run(tf.global_variables_initializer())
+    saver = tf.train.Saver(max_to_keep=10)
+    p = []
+    for i in range(10):
+        model_path = os.path.join(model_path, model_name + str(i) + '.ckpt')
+        saver.restore(sess, model_path)
+        p8s = model.predict(sess, sents)
+        p.append(p8s)
+    return p
+
+
+def vote_ensemble(label_dict, perf_dict, num_sample):
+    label = np.zeros((10, num_sample, 8), dtype=np.float32)
+    for one_label in label_dict.values():
+        label = label + np.asarray(one_label, dtype=np.float32)
+    label = label/len(label_dict)
+    label = label.mean(0)
     return label
 
 
 def main(_):
     # load data
     batch_size = config.batch_size
-
     meta_data_path = '../data/meta.pkl'
     meta_data = pkl.load(open(meta_data_path, 'rb'))
     label_class = meta_data['n_y']
@@ -40,48 +65,45 @@ def main(_):
     maxlen = embeddings['maxlen']
 
     test_data = open('train_data.data', 'r').readlines()
-    W_test, _, L_test = utilizer.get_train_data(test_data, maxlen, 0)
-    W_test = np.asarray(W_test)
+    sents, _, L_test = utilizer.get_train_data(test_data, maxlen, 0)
+    num_sample = len(sents)
+    sents = np.asarray(sents)
     L_test = np.asarray(L_test)
 
-    print('W_test shape:', W_test.shape)
+    print('W_test shape:', sents.shape)
     print('L_test shape:', L_test.shape)
     print('W_embedding shape', W_embedding.shape)
     print('maxlen:', maxlen)
     print('Label class:', label_class)
     print('label to index map:')
     for (k, v) in label_ind_map.items():
-        print('\t', k.encode('utf8'),':',v)
-
+        print('\t', k.encode('utf8'), ':', v)
     print('batch_size:', batch_size)
 
-    # build graph
-    tf.reset_default_graph()
-    # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9, allow_growth=True)
-    gpu_options = tf.GPUOptions(allow_growth=True)
-    sess = tf.InteractiveSession(config=tf.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True))
+    # implement Li Shen's model
+    g1 = tf.Graph()
+    label_dict = {}
+    perf_dict = {}
 
-    model = main_model.Model(label_class, maxlen, W_embedding)
-    sess.run(tf.global_variables_initializer())
+    with g1.as_default():
+        model = model_cnn_lishen.Model(label_class, maxlen, W_embedding)
+        model_path = model_info.model_cnn_lishen.model_path
+        model_name = model_info.model_cnn_lishen.model_name
+        multi_label = implement_model(model, model_path, model_name, sents)
+        # dimensionality of multi_label is: 10 * num_sample * 8
+        label_dict['model_cnn_lishen'] = multi_label
+        perf_dict['model_cnn_lishen'] = model_info.model_cnn_lishen.performance
 
-    p_ave = np.zeros((7, 2), dtype=np.float32)
-    for i in range(10):
-        # load parameter
-        model_path = '../model/model' + str(i) + 'model.ckpt'
-        saver = tf.train.Saver(max_to_keep=10)
-        saver.restore(sess, model_path)
-        probability = model.predict(sess, W_test, L_test, int(batch_size / 1))
-    p_ave = p_ave + probability
+    labels = vote_ensemble(label_dict, perf_dict, num_sample)
+
     predict_label_path = 'predict.label'
     predict_label = open(predict_label_path, 'w')
-    num_samp, num_class, _ = p_ave.shape
-    for isamp in range(num_samp):
-        p = p_ave[isamp, :, :]
-        l_multi = np.argmax(p,1)
-        label = class_decoding(l_multi, ind_label_map)
-        predict_label.write(label.encode('utf8'))
+    for label in labels:
+        label_chn = label_decoding(label, ind_label_map)
+        predict_label.write(label_chn.encode('utf8'))
         predict_label.write('\n')
     predict_label.close()
+
 
 if __name__ == '__main__':
     tf.app.run()

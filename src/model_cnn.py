@@ -181,12 +181,16 @@ class Model:
         return label_accuracy, loss, errors
 
 
-    def predict(self, sess, w, sl, batch_size):
+    def predict(self, sess, sents):
     # xhw added, based on xqw's code, 2017-09-06
         i = 0
-        ps = []
-        while i < len(w):
-            w_batch = w[i: i + batch_size]
+        p8s = []
+        sl = []
+        for ww in sents:
+            sl.append(len(ww))
+        batch_size = 50
+        while i < len(sents):
+            w_batch = sents[i: i + batch_size]
             sl_batch = sl[i: i + batch_size]
             i += batch_size
 
@@ -198,6 +202,15 @@ class Model:
                                     # self.y_: y_batch,
                                     self.dropout_keep_prob_mlp: 1.0,
                                     self.is_training: False})
-            ps.append(p)
-        ps = np.concatenate(ps)
-        return ps
+            for j in range(len(sents)):
+                p8 = [0] * 8
+                is_ys = 0
+                for k in range(7):
+                    if p[j][k][0] < p[j][k][1]:
+                        p8[k+1] = 1
+                        is_ys = 1
+                    if is_ys == 0:
+                        p8[0] = 1
+                p8s.append(p8)
+
+        return p8s
