@@ -2,11 +2,11 @@
 import json
 
 def main():
-    bullet_path = 'demo/predict.label'
-    input_json = 'demo/input.json'
-    output_json = 'demo/output.json'
+    bullet_path = 'predict.label'
+    input_json = 'input.json'
+    output_json = 'output.json'
     ERROR_CASE_OUTPUT = 1
-    error_case_path = 'demo/error_case.json'
+    error_case_path = 'error_case.json'
 
     if ERROR_CASE_OUTPUT == 1:
         error_case_stream = open(error_case_path, 'w')

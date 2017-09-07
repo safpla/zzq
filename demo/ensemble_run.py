@@ -5,6 +5,8 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 import cPickle as pkl
+import sys
+sys.path.append("..")
 from src import utilizer
 from src import model_cnn as main_model
 from src import config
@@ -22,7 +24,7 @@ def main(_):
     # load data
     batch_size = config.batch_size
 
-    meta_data_path = 'data/meta.pkl'
+    meta_data_path = '../data/meta.pkl'
     meta_data = pkl.load(open(meta_data_path, 'rb'))
     label_class = meta_data['n_y']
     label_ind_map = meta_data['dl']
@@ -30,14 +32,14 @@ def main(_):
     for (k, v) in label_ind_map.items():
         ind_label_map[v] = k
 
-    embedding_file_path = 'data/embedding_data.p'
+    embedding_file_path = '../data/embedding_data.p'
     embedding_file = open(embedding_file_path, 'r')
     embeddings = pkl.load(embedding_file)
     embedding_file.close()
     W_embedding = np.asarray(embeddings["pretrain"]["word_embedding"], dtype=np.float32)
     maxlen = embeddings['maxlen']
 
-    test_data = open('demo/train_data.data', 'r').readlines()
+    test_data = open('train_data.data', 'r').readlines()
     W_test, _, L_test = utilizer.get_train_data(test_data, maxlen, 0)
     W_test = np.asarray(W_test)
     L_test = np.asarray(L_test)
@@ -65,12 +67,12 @@ def main(_):
     p_ave = np.zeros((7, 2), dtype=np.float32)
     for i in range(10):
         # load parameter
-        model_path = 'model/model' + str(i) + 'model.ckpt'
-        # graph_path = model_path + '.meta'
-        model.saver.restore(sess, model_path)
+        model_path = '../model/model' + str(i) + 'model.ckpt'
+        saver = tf.train.Saver(max_to_keep=10)
+        saver.restore(sess, model_path)
         probability = model.predict(sess, W_test, L_test, int(batch_size / 1))
     p_ave = p_ave + probability
-    predict_label_path = 'demo/predict.label'
+    predict_label_path = 'predict.label'
     predict_label = open(predict_label_path, 'w')
     num_samp, num_class, _ = p_ave.shape
     for isamp in range(num_samp):
