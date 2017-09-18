@@ -2,6 +2,7 @@
 import json
 import pickle as pkl
 import thulac
+import sys
 
 def get_data_extract(input_json):
     ft = open('data.txt0', 'w')
@@ -19,9 +20,7 @@ def get_data_extract(input_json):
     ft.close()
     fl.close()
 
-def main():
-    input_json = 'input.json'
-    output_json = 'output.json'
+def main(input_json, output_json):
     get_data_extract(input_json)
     thu = thulac.thulac(seg_only=True, model_path='../data/thulac_models')
     thu.cut_f('data.txt0', 'data.txt1')
@@ -29,4 +28,11 @@ def main():
     exit()
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) > 1:
+        input_json = sys.argv[1]
+        output_json = sys.argv[2]
+    else:
+        input_json = '/home/xuqingwei/work/demo/zzq/zzq_final/output/extract_file_test.json'
+        output_json = '/home/xuqingwei/work/demo/zzq/zzq_final/output.json'
+
+    main(input_json, output_json)

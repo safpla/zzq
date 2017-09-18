@@ -1,39 +1,41 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 import numpy as np
-import cPickle as pkl
+import pickle as pkl
 import sys
 import os
 import model_info
 
 sys.path.append("..")
+sys.path.append("../xwd")
+sys.path.append("../src")
 from src import utilizer
 from src import model_cnn as model_cnn_lishen
+from xwd.cnn import CNNInterface
 from src import config
 
 
 def label_decoding(label, ind_label_map):
     label_chn = ''
     for i in range(len(label)):
-        if label[i] == 1:
+        if label[i] > 0.5:
             label_chn = label_chn + ind_label_map[i] + ' '
     return label_chn.strip()
 
 
 def implement_model(model, model_path, model_name, sents):
-    gpu_options = tf.GPUOptions(allow_growth=True)
-    sess = tf.InteractiveSession(config=tf.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True))
-    sess.run(tf.global_variables_initializer())
-    saver = tf.train.Saver(max_to_keep=10)
-    p = []
-    for i in range(10):
-        model_path = os.path.join(model_path, model_name + str(i) + '.ckpt')
-        saver.restore(sess, model_path)
-        p8s = model.predict(sess, sents)
-        p.append(p8s)
+    configproto = tf.ConfigProto()
+    configproto.gpu_options.allow_growth = True
+    configproto.allow_soft_placement = True
+    with tf.Session(config=configproto) as sess:
+        sess.run(tf.global_variables_initializer())
+        p = []
+        for i in range(10):
+            model_full_path = model_path + '/' + model_name[i]
+            print("model_path:",model_full_path)
+            model.restore(sess, model_full_path)
+            print('cross_validation model %d is restored' %(i))
+            p8s = model.predict(sess, sents)
+            p.append(p8s)
     return p
 
 
@@ -58,14 +60,14 @@ def main(_):
         ind_label_map[v] = k
 
     embedding_file_path = '../data/embedding_data.p'
-    embedding_file = open(embedding_file_path, 'r')
+    embedding_file = open(embedding_file_path, 'rb')
     embeddings = pkl.load(embedding_file)
     embedding_file.close()
     W_embedding = np.asarray(embeddings["pretrain"]["word_embedding"], dtype=np.float32)
     maxlen = embeddings['maxlen']
 
     test_data = open('train_data.data', 'r').readlines()
-    sents, _, L_test = utilizer.get_train_data(test_data, maxlen, 0)
+    sents, _, L_test = utilizer.get_train_data_full(test_data, maxlen, 0)
     num_sample = len(sents)
     sents = np.asarray(sents)
     L_test = np.asarray(L_test)
@@ -80,11 +82,12 @@ def main(_):
         print('\t', k.encode('utf8'), ':', v)
     print('batch_size:', batch_size)
 
-    # implement Li Shen's model
-    g1 = tf.Graph()
-    label_dict = {}
     perf_dict = {}
+    label_dict = {}
 
+    # implement Li Shen's model
+    print('start Li Shen''s model')
+    g1 = tf.Graph()
     with g1.as_default():
         model = model_cnn_lishen.Model(label_class, maxlen, W_embedding)
         model_path = model_info.model_cnn_lishen.model_path
@@ -93,6 +96,22 @@ def main(_):
         # dimensionality of multi_label is: 10 * num_sample * 8
         label_dict['model_cnn_lishen'] = multi_label
         perf_dict['model_cnn_lishen'] = model_info.model_cnn_lishen.performance
+    """
+
+    # implement Xu Weidi's cnn mode
+    print('start Xu Weidi''s cnn model')
+    g2 = tf.Graph()
+    with g2.as_default():
+        model = CNNInterface()
+        model_path = model_info.model_cnn_xwd.model_path
+        model_name = model_info.model_cnn_xwd.model_name
+        multi_label = implement_model(model, model_path, model_name, sents)
+        label_dict['model_cnn_xwd'] = multi_label
+        perf_dict['model_cnn_xwd'] = model_info.model_cnn_xwd.performance
+    """
+    for i in range(10):
+        print(multi_label[i][0])
+    
 
     labels = vote_ensemble(label_dict, perf_dict, num_sample)
 
@@ -100,7 +119,7 @@ def main(_):
     predict_label = open(predict_label_path, 'w')
     for label in labels:
         label_chn = label_decoding(label, ind_label_map)
-        predict_label.write(label_chn.encode('utf8'))
+        predict_label.write(label_chn)
         predict_label.write('\n')
     predict_label.close()
 

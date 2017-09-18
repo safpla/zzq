@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 from abc import ABCMeta, abstractmethod
 
 class EnsembleModelInterface(object):
@@ -37,3 +38,15 @@ class EnsembleModelInterface(object):
                  [0,0,0,0,0,0,0,1]: 电视节目
         """
         return
+
+    @abstractmethod
+    def restore(self, sess, model_path):
+        """
+        Restore a model from a given checkpoint
+        :param sess: tf.Session()
+        :param model_path: model file's name
+
+        :return: void
+        """
+        return
+

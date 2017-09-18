@@ -1,10 +1,9 @@
 # -*- coding:utf-8 -*-
 import json
+import sys
 
-def main():
+def main(input_json, output_json):
     bullet_path = 'predict.label'
-    input_json = 'input.json'
-    output_json = 'output.json'
     ERROR_CASE_OUTPUT = 1
     error_case_path = 'error_case.json'
 
@@ -40,4 +39,10 @@ def main():
     error_case_stream.close()
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) > 1:
+        input_json = sys.argv[1]
+        output_json = sys.argv[2]
+    else:
+        input_json = '/home/xuqingwei/work/demo/zzq/zzq_final/output/extract_file_test.json'
+        output_json = '/home/xuqingwei/work/demo/zzq/zzq_final/output.json'
+    main(input_json, output_json)

@@ -1,5 +1,3 @@
-# run in python2
-
 import tensorflow as tf
 import pickle as pkl
 
@@ -30,7 +28,7 @@ def main(_):
     train_txt = open('data.txt1', 'r').readlines()
     train_label = open('data.label', 'r').readlines()
     train_file = open('train_data.data', 'w')
-    loaded = pkl.load(open(dict_file_path, 'r'))
+    loaded = pkl.load(open(dict_file_path, 'rb'))
     vocab_sorted = loaded['word']
     vocab_id = {'#SOS#': 2}
     for v in range(len(vocab_sorted)):

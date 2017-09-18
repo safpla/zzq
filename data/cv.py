@@ -3,7 +3,7 @@ import numpy as np
 np.random.seed(8899)
 
 data = {}
-for i in xrange(10):
+for i in range(10):
     data[i] = []
 
 with open('train_data.data.shuffle', 'r') as f:

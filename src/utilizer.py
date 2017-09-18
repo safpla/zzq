@@ -3,10 +3,10 @@ import numpy as np
 
 def pad_list(lst):
     ll = 0
-    for i in xrange(len(lst)):
+    for i in range(len(lst)):
         if ll < len(lst[i]):
             ll = len(lst[i])
-    for i in xrange(len(lst)):
+    for i in range(len(lst)):
         lst[i].extend([0]*(ll-len(lst[i])))
     return np.asarray(lst)
 
@@ -25,7 +25,7 @@ def read_data(l):
 
     tmp_y = [int(y) for y in tmp_l[-1].split(',')]
 
-    for i in xrange(4):
+    for i in range(4):
         tmp_w.insert(0, 0)
         tmp_w.append(0)
 
@@ -41,7 +41,7 @@ def read_data_fake(l, maxlen, fake_data_num):
 
     tmp_l = l.strip().split('\t')
 
-    for fn in xrange(fake_data_num):
+    for fn in range(fake_data_num):
         for n in tmp_l[:-1]:
         # for n in tmp_l[0:2]:
             tmp_w = []
@@ -61,7 +61,7 @@ def read_data_fake(l, maxlen, fake_data_num):
             tmp_w = tmp_w[s:e]
             tmp_w = tmp_w[:maxlen]
 
-            for i in xrange(4):
+            for i in range(4):
                 tmp_w.insert(0, 0)
                 tmp_w.append(0)
 
@@ -93,11 +93,30 @@ def get_train_data(data, maxlen, fake_data_num):
         else:
             tmp_w, tmp_y, tmp_len = read_data(l)
             if tmp_len < 10:
-                continue
+               continue
             W.append(tmp_w)
             Y.append(tmp_y)
             L.append(tmp_len)
     for y in range(len(Y)):
         Y[y] = [j for j in Y[y]]
 
+    return W, Y, L
+
+def get_train_data_full(data, maxlen, fake_data_num):
+    W = []
+    Y = []
+    L = []
+    for l in data:
+        if fake_data_num > 0:
+            tmp_w, tmp_y, tmp_len = read_data_fake(l, maxlen, fake_data_num)
+            W += tmp_w
+            Y += tmp_y
+            L += tmp_len
+        else:
+            tmp_w, tmp_y, tmp_len = read_data(l)
+            W.append(tmp_w)
+            Y.append(tmp_y)
+            L.append(tmp_len)
+    for y in range(len(Y)):
+        Y[y] = [j for j in Y[y]]
     return W, Y, L

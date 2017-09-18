@@ -5,14 +5,14 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 import time
-import cPickle as pkl
+import pickle as pkl
 import sys
 
 from src import config
 from src import model_cnn as main_model
 from src import utilizer
 
-from docopt import docopt
+# from docopt import docopt
 
 np.random.seed(3306)
 
@@ -31,7 +31,7 @@ def train(train_data_path, test_data_path, cv_num=1):
 
     print('Loading Data...')
 
-    dictionary_data = pkl.load(open(dict_path, 'r'))['word']
+    dictionary_data = pkl.load(open(dict_path, 'rb'))['word']
     dictionary = {}
     for d in dictionary_data:
         dictionary[len(dictionary) + 3] = d[0]
@@ -45,7 +45,10 @@ def train(train_data_path, test_data_path, cv_num=1):
     train_data = train_data[:int(len(train_data) * 0.9)]
     test_data = open(test_data_path, 'r').readlines()#[:1000]
 
-    embedding_file = open(embedding_path, 'r')
+    # added by xuhaowen, 2017-09-08. Put test_data into train_data to give a final model
+    train_data.extend(test_data)
+
+    embedding_file = open(embedding_path, 'rb')
     embeddings = pkl.load(embedding_file)
     embedding_file.close()
 
@@ -93,6 +96,9 @@ def train(train_data_path, test_data_path, cv_num=1):
     model = main_model.Model(label_class, maxlen, W_embedding)
 
     sess.run(tf.global_variables_initializer())
+
+    # added by xhw, 2017-09-07
+    saver = tf.train.Saver(max_to_keep=10)
 
     best_label = 0
     best_loss = 100
@@ -153,7 +159,7 @@ def train(train_data_path, test_data_path, cv_num=1):
 
             start_time = time.time()
 
-    save_path = model.saver.save(sess, 'model/model' + str(cv_num) + 'model.ckpt')
+    save_path = saver.save(sess, 'model/model_cnn_lishen' + str(cv_num) + '.ckpt')
     print('save the model in ', save_path)
     return test_label, test_errors
 
@@ -161,7 +167,7 @@ def train(train_data_path, test_data_path, cv_num=1):
 def main(_):
     f_errors_name = 'results/error' + str(time.time()) + '.log'
     accs_label = []
-    for i in xrange(10):
+    for i in range(10):
         train_data_path = 'data/cv/train.' + str(i)
         test_data_path = 'data/cv/test.' + str(i)
         acc_label, test_errors = train(train_data_path, test_data_path, cv_num=i)

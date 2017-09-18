@@ -1,25 +1,29 @@
 # -*- coding: utf-8 -*-
 
-import cPickle as pkl
+import pickle as pkl
 import numpy as np
 import operator
 import re
 
-from docopt import docopt
+# from docopt import docopt
 
 
 def main():
-    args = docopt("""
-        Usage:
-            process.py [options]
+    # <<<<< origin, changed by xuhaowen, 2017-09-08
+    #args = docopt("""
+    #    Usage:
+    #       process.py [options]
 
-        Options:
-            --word_embedding_dims NUM       The dimension of words [default: 100]
-            --train_data STRING             [default: data]
-        """)
-
-    word_embedding_dims = int(args['--word_embedding_dims'])
-    train_path = args['--train_data']
+    #   Options:
+    #       --word_embedding_dims NUM       The dimension of words [default: 100]
+    #       --train_data STRING             [default: data]
+    #   """)
+    #word_embedding_dims = int(args['--word_embedding_dims'])
+    #train_path = args['--train_data']
+    # =====
+    word_embedding_dims = 100
+    train_path = 'data'
+    # >>>>>
 
     global maxlen
     maxlen = 0
@@ -33,7 +37,7 @@ def main():
     embedding_file_path = "embedding_" + train_path + ".p"
 
     dict_file_path = train_path + ".dict"
-    dict_file = open(dict_file_path, 'w')
+    dict_file = open(dict_file_path, 'wb')
 
     # VOCAB ID
     print("vocab dict")
@@ -119,7 +123,10 @@ def main():
             word_embedding.append(np.random.uniform(-0.25, 0.25, word_embedding_dims))
         word_embedding_rand.append(np.random.uniform(-0.25, 0.25, word_embedding_dims))
 
-    f = open(embedding_file_path, 'w')
+    # changed by xuhaowen, 2017-09-08, for python3 compatibility
+    # f = open(embedding_file_path, 'w')
+    f = open(embedding_file_path, 'wb')
+    
     pkl.dump({"pretrain": {"word_embedding": word_embedding},
               "random": {"word_embedding": word_embedding_rand},
               "maxlen": maxlen + 2 * pad}, f)

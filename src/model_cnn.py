@@ -1,4 +1,4 @@
-import config
+from src import config
 
 import tensorflow as tf
 import numpy as np
@@ -75,7 +75,7 @@ class Model:
                 conv_bs.append(conv_b)
 
             cnn_outputs = []
-            for i in xrange(len(self.filter_lengths)):
+            for i in range(len(self.filter_lengths)):
                 conv = conv1d(word_embedded, conv_Ws[i], conv_bs[i])
                 cnn_outputs.append(conv)
             cnn_outputs_concat = tf.concat(cnn_outputs, 2)
@@ -95,6 +95,9 @@ class Model:
 
             self.loss = self.loss_label
 
+            # saver, added by xuhaowen, 2017-09-08
+            self.saver = tf.train.Saver()
+
             # loss
             update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
             with tf.control_dependencies(update_ops):
@@ -113,7 +116,7 @@ class Model:
 
             # tf.global_variables_initializer().run()
             # w_batch = np.zeros([50, self.maxlen])
-            # sl_batch = [self.maxlen for n in xrange(50)]
+            # sl_batch = [self.maxlen for n in range(50)]
             # y_batch = np.zeros([50, self.label_class])
             # test = self.correct_prediction.eval({self.w: w_batch,
             #                                 self.sl: sl_batch,
@@ -169,7 +172,7 @@ class Model:
                                     self.is_training: False})
             labels = r[0]
             loss += len(w_batch) * r[1]
-            for n in xrange(len(labels)):
+            for n in range(len(labels)):
                 l = labels[n]
                 if l.all():
                     label_correct += 1
@@ -202,15 +205,21 @@ class Model:
                                     # self.y_: y_batch,
                                     self.dropout_keep_prob_mlp: 1.0,
                                     self.is_training: False})
-            for j in range(len(sents)):
+            for j in range(len(w_batch)):
                 p8 = [0] * 8
                 is_ys = 0
                 for k in range(7):
                     if p[j][k][0] < p[j][k][1]:
                         p8[k+1] = 1
                         is_ys = 1
-                    if is_ys == 0:
-                        p8[0] = 1
+                if is_ys == 0:
+                    p8[0] = 1
+                       
                 p8s.append(p8)
 
         return p8s
+
+    def restore(self, sess, model_path):
+    # added by xuhaowen, 2017-09-08
+        self.saver.restore(sess, model_path)
+        return
